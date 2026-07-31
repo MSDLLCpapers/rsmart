@@ -1,0 +1,11 @@
+^rsmart\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^LICENSE$
+^LICENSES_THIRD_PARTY$
+^AGENTS\.md$
+^data-raw$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

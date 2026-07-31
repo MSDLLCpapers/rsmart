@@ -1,0 +1,30 @@
+rsmart uses third-party R packages which may be distributed under different
+licenses. We have listed all of these third party packages and their licenses
+below. However, the most up-to-date information can be found via inspecting
+the Imports field in the DESCRIPTION file.
+
+You must agree to the terms of these licenses, in addition to the rsmart
+source code license, in order to use this software.
+
+--------------------------------------------------
+Third party R packages listed by License type
+[Format: Name - URL]
+--------------------------------------------------
+
+Apache License (== 2.0) (https://opensource.org/license/apache-2-0)
+  * foreach - https://github.com/RevolutionAnalytics/foreach/blob/master/LICENSE
+
+GPL-2 (https://opensource.org/license/gpl-2-0)
+  * mvtnorm - https://cran.r-project.org/package=mvtnorm
+  * modelObj - https://cran.r-project.org/package=modelObj
+
+GPL-2 | GPL-3 (https://opensource.org/license/gpl-2-0)
+  * Matrix - https://cran.r-project.org/package=Matrix
+  * MASS - https://cran.r-project.org/package=MASS
+  * stats - https://www.r-project.org/COPYING
+
+LGPL (>= 2.1) (https://opensource.org/licenses/lgpl-license)
+  * doFuture - https://cran.r-project.org/package=doFuture
+
+MPL-2.0 (https://opensource.org/license/mpl-2-0/)
+  * data.table - https://github.com/Rdatatable/data.table/blob/master/LICENSE

@@ -1,0 +1,44 @@
+Package: rsmart
+Title: rsmart: An R Package for Sequential Multiple Assignment Randomized Trials
+Version: 0.1.0
+Authors@R: c(
+    person("Cole", "Manschot", email = "cole.manschot@msd.com", role = c("aut", "cre")),
+    person("Tabitha", "Peter", role = c("ctb")),
+    person("Gabriela", "Piasecki", role = c("ctb")),
+    person("Laura", "Frederick", role = c("ctb"))
+    )
+Description: Implements the interim augmented inverse probability weighted
+    estimator (IAIPWE) for estimating the value of treatment regimes embedded
+    in sequential multiple assignment randomized trials (SMARTs). The IAIPWE
+    subsumes both the inverse probability weighted estimator (IPWE) and the
+    augmented inverse probability weighted estimator (AIPWE), enabling
+    inference at interim and final analyses. The package provides functions for
+    value estimation, sandwich variance computation, group sequential stopping
+    boundaries, and sample size determination for multi-stage SMARTs with up to
+    two treatment options at each stage.
+License: GPL (>= 3)
+URL: https://MSDLLCpapers.github.io/rsmart/, https://github.com/MSDLLCpapers/rsmart
+BugReports: https://github.com/MSDLLCpapers/rsmart/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+    dplyr,
+    knitr,
+    pkgdown,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Depends: 
+    R (>= 3.5)
+Imports: 
+    data.table,
+    doFuture,
+    foreach,
+    Matrix,
+    MASS,
+    modelObj,
+    mvtnorm,
+    stats
+LazyData: true
+VignetteBuilder: knitr

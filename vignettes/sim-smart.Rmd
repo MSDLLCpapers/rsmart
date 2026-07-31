@@ -1,0 +1,563 @@
+---
+title: "Simulating SMART designs with sim_treatment"
+subtitle: "Building two-stage SMARTs step by step"
+output: 
+  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulating SMART designs with sim_treatment}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+## Introduction
+
+The `sim_treatment()` function provides a flexible way to simulate treatment
+assignments one stage at a time.
+It can be used to simulate various common SMART designs, including those with response indicators or feasible sets. 
+An additional function `block_rand()` can implement permuted block randomization to ensure greater balance than binomial randomization in later stages.
+
+This vignette walks through three two-stage designs:
+
+1. **No response status** — all participants are re-randomized at stage 2.
+2. **Response, non-responders only** — a response indicator is observed
+   between stages and only non-responders are re-randomized.
+3. **Response, everyone re-randomized** — a response indicator is observed
+   but both responders and non-responders receive a new randomization at
+   stage 2.
+
+The first stage helps to build our intuition in the simplest case. The second and third showcase additional features of the function. 
+Each section includes a diagram of the design, sample simulation code, and
+the resulting data.
+
+```{r load}
+library(rsmart)
+```
+
+## Design 1: No response status
+
+In the simplest two-stage SMART, every participant is randomized at stage 1
+and again at stage 2 regardless of any intermediate outcome.
+This design has four embedded treatment regimes.
+
+```{r design1-diagram, echo=FALSE, fig.cap="Design 1: Two-stage SMART without a response. All participants are re-randomized at stage 2.", fig.height=4, fig.width=8}
+par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
+plot.new()
+plot.window(xlim = c(0, 11), ylim = c(-0.8, 6.5))
+
+# Colors (matching reference image)
+col_rand <- "#5B7FBA"   # blue circles for randomization
+col_trt  <- "#1A8A7A"   # teal boxes for treatments
+col_line <- "grey30"    # connecting lines
+col_phase <- "#6EC6B8"  # light teal for phase boxes
+
+# Helper: draw a filled rounded-rect label (simulated with rect + text)
+draw_box <- function(x, y, label, w = 0.9, h = 0.4, bg = col_trt, tcol = "white", cex = 0.72) {
+  rect(x - w, y - h, x + w, y + h, col = bg, border = NA)
+  text(x, y, label, cex = cex, col = tcol, font = 2)
+}
+
+# --- Stage 1 randomization node (circle) ---
+symbols(1, 3, circles = 0.35, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(1, 3, "R", cex = 0.95, font = 2, col = "white")
+
+# --- Stage 1 branches ---
+segments(1.35, 3, 2.8, 5, lwd = 2, col = col_line)
+segments(1.35, 3, 2.8, 1, lwd = 2, col = col_line)
+
+# --- Stage 1 treatment boxes ---
+draw_box(3.7, 5, "Treatment A")
+draw_box(3.7, 1, "Treatment B")
+segments(2.8, 5, 2.8, 5, lwd = 2, col = col_line)  # connector
+segments(2.8, 1, 2.8, 1, lwd = 2, col = col_line)
+
+# Arrows from branch end to box
+arrows(2.8, 5, 2.8, 5, length = 0, lwd = 2, col = col_line)
+segments(2.8, 5, 3.7 - 0.9, 5, lwd = 2, col = col_line)
+segments(2.8, 1, 3.7 - 0.9, 1, lwd = 2, col = col_line)
+
+# --- Connectors from treatment boxes to stage 2 R nodes ---
+segments(3.7 + 0.9, 5, 5.8 - 0.35, 5, lwd = 2, col = col_line)
+segments(3.7 + 0.9, 1, 5.8 - 0.35, 1, lwd = 2, col = col_line)
+
+# --- Stage 2 randomization nodes (circles) ---
+symbols(5.8, 5, circles = 0.35, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(5.8, 5, "R", cex = 0.85, font = 2, col = "white")
+
+symbols(5.8, 1, circles = 0.35, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(5.8, 1, "R", cex = 0.85, font = 2, col = "white")
+
+# --- Stage 2 branches (upper: a1=0) ---
+segments(6.15, 5, 7.5, 5.9, lwd = 1.8, col = col_line)
+segments(6.15, 5, 7.5, 4.1, lwd = 1.8, col = col_line)
+
+# --- Stage 2 branches (lower: a1=1) ---
+segments(6.15, 1, 7.5, 1.9, lwd = 1.8, col = col_line)
+segments(6.15, 1, 7.5, 0.1, lwd = 1.8, col = col_line)
+
+# Connectors to outcome boxes
+segments(7.5, 5.9, 9.5 - 0.9, 5.9, lwd = 1.8, col = col_line)
+segments(7.5, 4.1, 9.5 - 0.9, 4.1, lwd = 1.8, col = col_line)
+segments(7.5, 1.9, 9.5 - 0.9, 1.9, lwd = 1.8, col = col_line)
+segments(7.5, 0.1, 9.5 - 0.9, 0.1, lwd = 1.8, col = col_line)
+
+# --- Outcome treatment boxes ---
+draw_box(9.5, 5.9, "Treatment C", w = 0.95)
+draw_box(9.5, 4.1, "Treatment D", w = 0.95)
+draw_box(9.5, 1.9, "Treatment E", w = 0.95)
+draw_box(9.5, 0.1, "Treatment F", w = 0.95)
+
+# --- Stage legend at the bottom ---
+draw_box(x = 1, y = -0.6, label = "Phase:", 
+        w = 0.5, h = 0.18, bg = col_phase, tcol = "white", cex = 0.7)
+
+draw_box(x = 3.7, y = -0.6, label = "Stage 1", 
+         h = 0.18, bg = col_phase, tcol = "white", cex = 0.7)
+
+draw_box(x = 9.5, y = -0.6, label = "Stage 2", 
+         h = 0.18, bg = col_phase, tcol = "white", cex = 0.7)
+```
+
+This design has four embedded regimes: 
+(A, C), (A, D), (B, E), and (B, F), which will be encoded as
+`(a1=0, a2=0)`, `(a1=0, a2=1)`, `(a1=1, a2=0)`,
+`(a1=1, a2=1)`, respectively, using `sim_treatment()`. 
+
+### Simulation
+
+Consider a possible trial with `500` participants. 
+The age of participants is recorded at entry and their compliance with treatment at stage 2. 
+We assign treatments with equal randomization using a permuted block design. 
+
+We provide `sim_treatment()` with:
+
+- `n_treatments`: the number of treatments available at the stage for randomized participants
+- `dat`: a dataset with the initial covariates and IDs at the first stage
+- `stage`: the stage of the trial that treatments should be assigned for
+- `rand_prob_fn`: the `block_rand` function to generate permuted block randomization, with each treatment repeated twice in a block
+
+The `block_rand` function here will use a block size of 4 so a sample block could be `2 1 1 2`. 
+This will ensure that treatment imbalance between groups is minimized.
+
+Because there is no response status, the input `randomize_response` is implicitly left at its
+default (`NULL`).
+
+The function will return the data frame with the treatment assignment for each participant.
+
+```{r design1-sim}
+set.seed(42)
+n <- 500
+
+# Start with baseline data
+dat1 <- data.frame(
+  id  = 1:n,
+  x1  = round(runif(n, 25, 75)),        # age
+  x2  = rbinom(n, 1, 0.9)               # treatment compliance
+)
+
+# Stage 1: block randomization
+dat1 <- sim_treatment(n_treatments = 2, dat = dat1, stage = 1,
+                      rand_prob_fn = block_rand(block_rep = 2))
+
+# Stage 2: everyone is re-randomized within a1 groups (no response)
+dat1 <- sim_treatment(n_treatments = 2, dat = dat1, stage = 2,
+                      rand_prob_fn = block_rand(block_rep = 2))
+
+table(dat1$a1, dat1$a2)
+head(dat1)
+```
+
+We see that the resulting data set has the columns `r colnames(dat1)`. 
+The treatments are appended as `a<stage>`.  
+
+## Design 2: Only non-responders are re-randomized
+
+Commonly, tailoring variables are used in SMARTs to determine sequential treatment options. 
+A response indicator is observed between stages and then governs available treatements.
+Often, it may be unethical to re-randomized away from a treatment that is working well and 
+responders are given a second stage treatment deterministically. 
+Alternatively, non-responders may be discontinued or given a single salvage therapy. 
+Here we encode this status using `r2` and will assign responders `r2 = 1` a single treatment 
+(coded `a2 = 0`).
+Non-responders will be re-randomized. 
+
+In the case where responders are randomized and non-responders are not, then the encoding of `r2 = 1` represents 
+non-responders and the function `sim_treatment` will assign responders, now encoded as `r2 = 0`, treatments. 
+
+```{r design2-diagram, echo=FALSE, fig.cap="Design 2: Two-stage SMART where only non-responders are re-randomized at stage 2.", fig.height=5.5, fig.width=9}
+par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
+plot.new()
+plot.window(xlim = c(0, 13), ylim = c(-1.5, 9))
+
+# Colors
+col_rand  <- "#5B7FBA"
+col_trt   <- "#1A8A7A"
+col_line  <- "grey30"
+col_resp  <- "grey50"
+col_phase <- "#6EC6B8"
+
+draw_box <- function(x, y, label, w = 1.0, h = 0.4, bg = col_trt, tcol = "white", cex = 0.7) {
+  rect(x - w, y - h, x + w, y + h, col = bg, border = NA)
+  text(x, y, label, cex = cex, col = tcol, font = 2)
+}
+
+# --- Stage 1 randomization node ---
+symbols(1, 4, circles = 0.38, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(1, 4, "R", cex = 0.95, font = 2, col = "white")
+
+# --- Stage 1 branches ---
+segments(1.38, 4, 2.5, 7, lwd = 2, col = col_line)
+segments(1.38, 4, 2.5, 1, lwd = 2, col = col_line)
+
+# --- Stage 1 treatment boxes ---
+draw_box(3.5, 7, "Treatment A")
+draw_box(3.5, 1, "Treatment B")
+segments(2.5, 7, 3.5 - 1.0, 7, lwd = 2, col = col_line)
+segments(2.5, 1, 3.5 - 1.0, 1, lwd = 2, col = col_line)
+
+# --- Response decision boxes ---
+draw_box(5.7, 7, "Response?", w = 0.9, bg = col_phase)
+draw_box(5.7, 1, "Response?", w = 0.9, bg = col_phase)
+segments(3.5 + 1.0, 7, 5.7 - 0.9, 7, lwd = 2, col = col_line)
+segments(3.5 + 1.0, 1, 5.7 - 0.9, 1, lwd = 2, col = col_line)
+
+# --- Upper arm (a1 = 0) response branches ---
+# Yes (responder) - dashed
+segments(6.6, 7, 7.5, 8.2, lwd = 1.5, col = col_resp, lty = 2)
+text(7.2, 8.5, "Yes", cex = 0.7, col = col_resp, font = 3)
+# No (non-responder) - solid
+segments(6.6, 7, 7.5, 5.8, lwd = 1.8, col = col_line)
+text(7.2, 5.5, "No", cex = 0.7, col = col_line, font = 3)
+
+# Responder deterministic treatment
+segments(7.5, 8.2, 10.8 - 1.0, 8.2, lwd = 1.5, col = col_resp, lty = 2)
+draw_box(10.8, 8.2, "Treatment C", w = 1.0)
+
+# Non-responder randomization
+symbols(8.2, 5.8, circles = 0.32, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(8.2, 5.8, "R", cex = 0.75, font = 2, col = "white")
+segments(7.5, 5.8, 8.2 - 0.32, 5.8, lwd = 1.8, col = col_line)
+
+# Non-responder branches (upper)
+segments(8.52, 5.8, 9.3, 6.6, lwd = 1.5, col = col_line)
+segments(8.52, 5.8, 9.3, 5.0, lwd = 1.5, col = col_line)
+segments(9.3, 6.6, 10.8 - 1.0, 6.6, lwd = 1.5, col = col_line)
+segments(9.3, 5.0, 10.8 - 1.0, 5.0, lwd = 1.5, col = col_line)
+draw_box(10.8, 6.6, "Treatment D", w = 1.0)
+draw_box(10.8, 5.0, "Treatment E", w = 1.0)
+
+# --- Lower arm (a1 = 1) response branches ---
+# Yes (responder) - dashed
+segments(6.6, 1, 7.5, 2.2, lwd = 1.5, col = col_resp, lty = 2)
+text(7.2, 2.5, "Yes", cex = 0.7, col = col_resp, font = 3)
+# No (non-responder) - solid
+segments(6.6, 1, 7.5, -0.2, lwd = 1.8, col = col_line)
+text(7.2, -0.5, "No", cex = 0.7, col = col_line, font = 3)
+
+# Responder deterministic treatment
+segments(7.5, 2.2, 10.8 - 1.0, 2.2, lwd = 1.5, col = col_resp, lty = 2)
+draw_box(10.8, 2.2, "Treatment F", w = 1.0)
+
+# Non-responder randomization
+symbols(8.2, -0.2, circles = 0.32, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(8.2, -0.2, "R", cex = 0.75, font = 2, col = "white")
+segments(7.5, -0.2, 8.2 - 0.32, -0.2, lwd = 1.8, col = col_line)
+
+# Non-responder branches (lower)
+segments(8.52, -0.2, 9.3, 0.6, lwd = 1.5, col = col_line)
+segments(8.52, -0.2, 9.3, -1.0, lwd = 1.5, col = col_line)
+segments(9.3, 0.6, 10.8 - 1.0, 0.6, lwd = 1.5, col = col_line)
+segments(9.3, -1.0, 10.8 - 1.0, -1.0, lwd = 1.5, col = col_line)
+draw_box(10.8, 0.6, "Treatment G", w = 1.0)
+draw_box(10.8, -1.0, "Treatment H", w = 1.0)
+
+# --- Phase legend ---
+draw_box(x = 1, y = -1.7, label = "Phase:",
+         w = 0.5, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 3.5, y = -1.7, label = "Stage 1",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 5.7, y = -1.7, label = "Response",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 10.8, y = -1.7, label = "Stage 2",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+```
+
+Responders follow a deterministic path (dashed lines). 
+There are still four embedded regimes, but now follow rules 
+"give treamtent 1 at stage 1, if response give treatment 2 at stage 2, 
+otherwise give treatment 3 at stage 2. (1, 2, 3)"
+The embedded regimes are now encoded as:
+`(a1=0, a2=0, a2=0)`, 
+`(a1=0, a2=0, a2=1)`, 
+`(a1=1, a2=0, a2=0)`, 
+`(a1=1, a2=0, a2=1)`.
+
+### Simulation
+
+We use similar inputs as before, but with the additional input 
+`randomize_response = "N"` so that we assign `a2 = 0` to all responders and
+randomize only the non-responders within each `a1` group.
+
+```{r design2-sim}
+set.seed(42)
+n <- 500
+
+dat2 <- data.frame(
+  id  = 1:n,
+  t1  = sort(round(runif(n, 0, 365 * 2))),  # enrollment day
+  x1  = round(runif(n, 25, 75))             # age
+)
+
+# Stage 1: block randomization (data sorted by t1)
+dat2 <- sim_treatment(n_treatments = 2, dat = dat2, stage = 1,
+                      rand_prob_fn = block_rand(block_rep = 2))
+
+# Generate response and stage 2 timing
+dat2$r2 <- rbinom(n, 1, 0.5)
+dat2$t2 <- dat2$t1 + 100 + round(runif(n, -10, 10))
+
+# Sort by t2 before stage 2 randomization (see note below)
+dat2 <- dat2[order(dat2$t2), ]
+
+# Stage 2: only non-responders re-randomized
+dat2 <- sim_treatment(n_treatments = 2, dat = dat2, stage = 2,
+                      rand_prob_fn = block_rand(block_rep = 2),
+                      randomize_response = "N")
+
+table(dat2$a1, dat2$a2, dat2$r2,
+      dnn = c("a1", "a2", "r2"))
+```
+
+Because of the use of the permuted block randomization, we see that among responders and conditioned on the first treatment, 
+there is relative balance between treatment assignments.
+All responders `r2 = 1` received `a2 = 0`. 
+
+
+## Design 3: Both responders and non-responders re-randomized
+
+In some SMARTs, all participants are re-randomized at stage 2, with treatments allowed to vary
+by response status. 
+This means responders may or may not receive different second-stage treatments than
+non-responders, and the randomization probabilities or allocation schedules
+can differ between the two groups.
+
+```{r design3-diagram, echo=FALSE, fig.cap="Design 3: Two-stage SMART where both responders and non-responders are re-randomized at stage 2.", fig.height=6.5, fig.width=9}
+par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
+plot.new()
+plot.window(xlim = c(0, 13), ylim = c(-2.5, 10.5))
+
+# Colors
+col_rand  <- "#5B7FBA"
+col_trt   <- "#1A8A7A"
+col_line  <- "grey30"
+col_resp  <- "grey50"
+col_phase <- "#6EC6B8"
+
+draw_box <- function(x, y, label, w = 1.0, h = 0.4, bg = col_trt, tcol = "white", cex = 0.7) {
+  rect(x - w, y - h, x + w, y + h, col = bg, border = NA)
+  text(x, y, label, cex = cex, col = tcol, font = 2)
+}
+
+# --- Stage 1 randomization node ---
+symbols(1, 4, circles = 0.38, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(1, 4, "R", cex = 0.95, font = 2, col = "white")
+
+# --- Stage 1 branches ---
+segments(1.38, 4, 2.5, 7.5, lwd = 2, col = col_line)
+segments(1.38, 4, 2.5, 0.5, lwd = 2, col = col_line)
+
+# --- Stage 1 treatment boxes ---
+draw_box(3.5, 7.5, "Treatment A")
+draw_box(3.5, 0.5, "Treatment B")
+segments(2.5, 7.5, 3.5 - 1.0, 7.5, lwd = 2, col = col_line)
+segments(2.5, 0.5, 3.5 - 1.0, 0.5, lwd = 2, col = col_line)
+
+# --- Response decision boxes ---
+draw_box(5.7, 7.5, "Response?", w = 0.9, bg = col_phase)
+draw_box(5.7, 0.5, "Response?", w = 0.9, bg = col_phase)
+segments(3.5 + 1.0, 7.5, 5.7 - 0.9, 7.5, lwd = 2, col = col_line)
+segments(3.5 + 1.0, 0.5, 5.7 - 0.9, 0.5, lwd = 2, col = col_line)
+
+# ===== Upper arm (a1 = 0) =====
+# Yes (responder)
+segments(6.6, 7.5, 7.3, 9.2, lwd = 1.8, col = col_line)
+text(7.0, 9.5, "Yes", cex = 0.7, col = col_resp, font = 3)
+# No (non-responder)
+segments(6.6, 7.5, 7.3, 5.8, lwd = 1.8, col = col_line)
+text(7.0, 5.5, "No", cex = 0.7, col = col_line, font = 3)
+
+# Responder randomization (a1=0, resp)
+symbols(7.9, 9.2, circles = 0.30, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(7.9, 9.2, "R", cex = 0.65, font = 2, col = "white")
+segments(7.3, 9.2, 7.9 - 0.30, 9.2, lwd = 1.5, col = col_line)
+
+segments(8.2, 9.2, 9.0, 9.9, lwd = 1.3, col = col_line)
+segments(8.2, 9.2, 9.0, 8.5, lwd = 1.3, col = col_line)
+segments(9.0, 9.9, 10.8 - 1.0, 9.9, lwd = 1.3, col = col_line)
+segments(9.0, 8.5, 10.8 - 1.0, 8.5, lwd = 1.3, col = col_line)
+draw_box(10.8, 9.9, "Treatment C", w = 1.0)
+draw_box(10.8, 8.5, "Treatment D", w = 1.0)
+
+# Non-responder randomization (a1=0, non-resp)
+symbols(7.9, 5.8, circles = 0.30, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(7.9, 5.8, "R", cex = 0.65, font = 2, col = "white")
+segments(7.3, 5.8, 7.9 - 0.30, 5.8, lwd = 1.5, col = col_line)
+
+segments(8.2, 5.8, 9.0, 6.5, lwd = 1.3, col = col_line)
+segments(8.2, 5.8, 9.0, 5.1, lwd = 1.3, col = col_line)
+segments(9.0, 6.5, 10.8 - 1.0, 6.5, lwd = 1.3, col = col_line)
+segments(9.0, 5.1, 10.8 - 1.0, 5.1, lwd = 1.3, col = col_line)
+draw_box(10.8, 6.5, "Treatment E", w = 1.0)
+draw_box(10.8, 5.1, "Treatment F", w = 1.0)
+
+# ===== Lower arm (a1 = 1) =====
+# Yes (responder)
+segments(6.6, 0.5, 7.3, 2.2, lwd = 1.8, col = col_line)
+text(7.0, 2.5, "Yes", cex = 0.7, col = col_resp, font = 3)
+# No (non-responder)
+segments(6.6, 0.5, 7.3, -1.2, lwd = 1.8, col = col_line)
+text(7.0, -1.5, "No", cex = 0.7, col = col_line, font = 3)
+
+# Responder randomization (a1=1, resp)
+symbols(7.9, 2.2, circles = 0.30, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(7.9, 2.2, "R", cex = 0.65, font = 2, col = "white")
+segments(7.3, 2.2, 7.9 - 0.30, 2.2, lwd = 1.5, col = col_line)
+
+segments(8.2, 2.2, 9.0, 2.9, lwd = 1.3, col = col_line)
+segments(8.2, 2.2, 9.0, 1.5, lwd = 1.3, col = col_line)
+segments(9.0, 2.9, 10.8 - 1.0, 2.9, lwd = 1.3, col = col_line)
+segments(9.0, 1.5, 10.8 - 1.0, 1.5, lwd = 1.3, col = col_line)
+draw_box(10.8, 2.9, "Treatment G", w = 1.0)
+draw_box(10.8, 1.5, "Treatment H", w = 1.0)
+
+# Non-responder randomization (a1=1, non-resp)
+symbols(7.9, -1.2, circles = 0.30, inches = FALSE, add = TRUE,
+        bg = col_rand, fg = col_rand)
+text(7.9, -1.2, "R", cex = 0.65, font = 2, col = "white")
+segments(7.3, -1.2, 7.9 - 0.30, -1.2, lwd = 1.5, col = col_line)
+
+segments(8.2, -1.2, 9.0, -0.5, lwd = 1.3, col = col_line)
+segments(8.2, -1.2, 9.0, -1.9, lwd = 1.3, col = col_line)
+segments(9.0, -0.5, 10.8 - 1.0, -0.5, lwd = 1.3, col = col_line)
+segments(9.0, -1.9, 10.8 - 1.0, -1.9, lwd = 1.3, col = col_line)
+draw_box(10.8, -0.5, "Treatment I", w = 1.0)
+draw_box(10.8, -1.9, "Treatment J", w = 1.0)
+
+# --- Phase legend ---
+draw_box(x = 1, y = -2.6, label = "Phase:",
+         w = 0.5, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 3.5, y = -2.6, label = "Stage 1",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 5.7, y = -2.6, label = "Response",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+draw_box(x = 10.8, y = -2.6, label = "Stage 2",
+         w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+```
+
+Because both responders and non-responders are randomized at stage 2,
+the number of embedded regimes grows.
+With the canonical encoding, each regime specifies a stage-1 treatment, a
+responder stage-2 treatment, and a non-responder stage-2 treatment, yielding
+$2 \times 2 \times 2 = 8$ embedded regimes.
+For completeness, we can enumerate these regimes as follows:
+
+1. (0, 0, 0)
+2. (0, 0, 1)
+3. (0, 1, 0)
+4. (0, 1, 1)
+5. (1, 0, 0)
+6. (1, 0, 1)
+7. (1, 1, 0)
+8. (1, 1, 1)
+
+Again, using the same format where these are the treatments given at stage 1, 
+at stage 2 for responders, and at stage 2 for non-responders. 
+
+
+### Simulation
+
+Setting `randomize_response = "Y"` includes the response column `r2` in the
+grouping variables so that randomization is performed independently within
+each combination of `a1` and `r2`.
+
+```{r design3-sim}
+set.seed(42)
+n <- 500
+
+dat3 <- data.frame(
+  id  = 1:n,
+  t1  = sort(round(runif(n, 0, 365 * 2))),
+  x1  = round(runif(n, 25, 75))
+)
+
+# Stage 1
+dat3 <- sim_treatment(n_treatments = 2, dat = dat3, stage = 1,
+                      rand_prob_fn = block_rand(block_rep = 2))
+
+# Generate response and timing
+dat3$r2 <- rbinom(n, 1, 0.5)
+dat3$t2 <- dat3$t1 + 100 + round(runif(n, -10, 10))
+
+# Sort by t2 before stage 2
+dat3 <- dat3[order(dat3$t2), ]
+
+# Stage 2: responders AND non-responders randomized (stratified by response)
+dat3 <- sim_treatment(n_treatments = 2, dat = dat3, stage = 2,
+                      rand_prob_fn = block_rand(block_rep = 2),
+                      randomize_response = "Y")
+
+table(dat3$a1, dat3$a2, dat3$r2,
+      dnn = c("a1", "a2", "r2"))
+```
+
+Unlike Design 2, responders now receive both `a2 = 0` and `a2 = 1`.
+We again see that conditioned on response status and first treatment, the a2 assignments are relatively well-balanced. 
+
+## Note on ordering and block randomization
+
+When using `block_rand()` (or any allocation-schedule–based randomization),
+the order in which participants appear in the data frame determines their
+position in the allocation schedule.
+If enrollment timing matters — for example, in a group sequential design — the
+data should be **sorted by the relevant time variable before calling
+`sim_treatment()`** at each stage.
+
+For stage 1, sort by the enrollment time (e.g., `t1`):
+
+```r
+dat <- dat[order(dat$t1), ]
+dat <- sim_treatment(n_treatments = 2, dat = dat, stage = 1,
+                     rand_prob_fn = block_rand(block_rep = 2))
+```
+
+For stage 2 and beyond, sort by the time of re-randomization (e.g., `t2`):
+
+```r
+dat <- dat[order(dat$t2), ]
+dat <- sim_treatment(n_treatments = 2, dat = dat, stage = 2,
+                     rand_prob_fn = block_rand(block_rep = 2),
+                     randomize_response = "N")
+```
+
+This ensures that the permuted block allocation schedule aligns with the
+temporal order of participant arrivals at each decision point.
+If simple randomization (the default `rand_prob_fn`) is used instead of
+block randomization, the row order does not affect the allocation and
+sorting is not required.

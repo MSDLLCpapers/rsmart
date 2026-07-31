@@ -1,0 +1,63 @@
+---
+title: "Getting Started with SMARTs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with SMARTs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rsmart)
+```
+
+This short vignette provides an overview of what SMARTs are, why they are useful, when they are appropriate, and what contribution the `rsmart` package makes.
+
+## What are SMARTs?
+
+Sequential multiple assignment randomized trials (SMARTs) are multi-stage clinical trials designed to evaluate sequences of treatments that adapt over time based on a patient's evolving response. In many disease areas, treatment is not a single decision but a series of decisions made at key points in a patient's care. A SMART formalizes this process by building multiple randomization points directly into the trial design.
+
+The distinguishing features of a SMART are:
+
+1. **Multiple stages of randomization.** Patients are randomized at each key decision point, not just at enrollment. At each stage, the set of treatments available to a patient may depend on their treatment history and response to prior treatment.
+
+2. **Embedded treatment regimes.** Each SMART embeds a set of *treatment regimes* — complete sequences of treatment rules spanning all stages. A regime specifies which treatment to give at each decision point, potentially depending on the patient's history. For example, a regime might be: "give Treatment A initially; if the patient responds, give Maintenance; if the patient does not respond, give Treatment B." In a given SMART, a patient's observed sequence of treatments may be consistent with *multiple* embedded regime - this is the key reason why analyzing data from SMARTs requires specialized methods. 
+
+3. **Evaluation of regime values.** The primary goal of a SMART is to estimate and compare the *value* of each embedded regime, where the value is the expected outcome (e.g., mean response) if all patients in the population were to follow that regime. This enables direct comparisons among treatment strategies, not just individual treatments.
+
+## Why use a SMART?
+
+SMARTs address challenges related to ethics, estimation, and economic constraints that arise when treatment decisions must be made sequentially over time.
+
+- **Patient welfare.** Since patients are re-randomized at each decision point, those who are not responding well to their current treatment have the opportunity to receive a different treatment at the next stage. This reduces the possibility of patients being kept on an ineffective treatment for the duration of a trial - a significant ethical concern. 
+
+- **Efficient use of resources.** SMARTs can reduce total sample size and shorten trial duration compared to running separate trials for each treatment sequence. This is especially true when interim analyses are incorporated, as the trial can be stopped early if sufficient evidence of efficacy or futility is observed. The IAIPWE approach implemented in `rsmart` gains additional efficiency by using partial information from all enrolled patients — including those who have not yet completed all treatment stages — rather than discarding data from patients still in progress at the time of analysis ([Manschot, Laber, and Davidian, 2023](https://onlinelibrary.wiley.com/doi/full/10.1111/biom.13854)).
+
+- **Principled estimation.** Standard inverse probability weighted estimators (IPWE) use data only from patients who have completed all treatment stages. The augmented IPWE (AIPWE) improves on this by using regression models to recover information from patients whose treatments deviated from a given regime. The interim AIPWE (IAIPWE) goes further by incorporating partial data from patients who are still progressing through the trial. This results in more precise estimates and greater statistical power, while still controlling the type I error rate.
+
+- **Support for interim monitoring.** SMARTs naturally lend themselves to planned interim analyses. The IAIPWE framework provides formal stopping boundaries (such as Pocock or O'Brien-Fleming boundaries) that allow a trial to be stopped early for efficacy or futility, with appropriate control of error rates across multiple looks at the data.
+
+## When are SMARTs appropriate?
+
+SMARTs are well suited for clinical settings with the following characteristics:
+
+- **Sequential treatment decisions.** The disease or condition requires a series of treatment decisions over time rather than a single intervention. 
+
+- **Treatment response that evolves over time.** Patients may respond or fail to respond at different stages, and treatment should be adapted accordingly. SMARTs are designed to capture this by re-randomizing patients at each decision point.
+
+- **Interest in comparing treatment strategies, not just individual treatments.** When the scientific question is about which *sequence* of treatments is best — rather than which single treatment is best at one time point — a SMART provides the appropriate framework for generating evidence.
+
+- **Longer follow-up periods.** Since SMARTs involve multiple stages and follow-up after each stage, they are most practical in disease areas where follow-up is already expected to span weeks or months. 
+
+Given these characteristics, example settings where SMARTs may be a good choice for design are **oncology trials** or **chronic disease management**. 
+
+## Where our package comes in
+
+Our `rsmart` package provides tools for users to design and analyze SMARTs, including those based on an IAIPWE approach. 
