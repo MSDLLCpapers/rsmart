@@ -17,7 +17,7 @@ Description: Implements the interim augmented inverse probability weighted
     boundaries, and sample size determination for multi-stage SMARTs with up to
     two treatment options at each stage.
 License: GPL (>= 3)
-URL: https://MSDLLCpapers.github.io/rsmart/, https://github.com/MSDLLCpapers/rsmart
+URL: https://MSDLLCpapers.github.io/rsmart/, https://github.com/MSDLLCpapers/rsmart, https://msdllcpapers.github.io/rsmart/
 BugReports: https://github.com/MSDLLCpapers/rsmart/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

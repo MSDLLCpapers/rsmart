@@ -1,41 +1,45 @@
 destination: docs
-
-url: https://MSDLLCpapers.github.io/rsmart/
-
+url: https://msdllcpapers.github.io/rsmart/
 template:
   bootstrap: 5
   bslib:
-    preset: "bootstrap"
-    primary: "#00857c"
-    navbar-light-brand-color: "#fff"
-    navbar-light-brand-hover-color: "#fff"
-    navbar-light-color: "#fff"
-    navbar-light-hover-color: "#fff"
-    navbar-light-active-color: "#fff"
-    dropdown-link-hover-color: "#fff"
-    dropdown-link-hover-bg: "#00857c"
-  math-rendering: "mathjax"
-
+    preset: bootstrap
+    primary: '#00857c'
+    navbar-light-brand-color: '#fff'
+    navbar-light-brand-hover-color: '#fff'
+    navbar-light-color: '#fff'
+    navbar-light-hover-color: '#fff'
+    navbar-light-active-color: '#fff'
+    dropdown-link-hover-color: '#fff'
+    dropdown-link-hover-bg: '#00857c'
+  math-rendering: mathjax
 footer:
   structure:
-    left: [developed_by, built_with, legal]
-    right: [blank]
+    left:
+    - developed_by
+    - built_with
+    - legal
+    right: blank
   components:
-    legal: "<br>Copyright &copy; 2026 Merck & Co., Inc., Rahway, NJ, USA and its affiliates. All rights reserved."
-    blank: "<span></span>"
-
+    legal: <br>Copyright &copy; 2026 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+      All rights reserved.
+    blank: <span></span>
 navbar:
   structure:
-    left: [intro, reference, articles, news]
-    right: [search, github]
-
+    left:
+    - intro
+    - reference
+    - articles
+    - news
+    right:
+    - search
+    - github
 reference:
 - title: Primary Analysis
   desc: Main entry point for IAIPWE estimation
   contents:
   - iaipwe
   - estimate_values
-
 - title: Trial Design
   desc: Functions for SMART design, sample size, and stopping boundaries
   contents:
@@ -46,7 +50,6 @@ reference:
   - get_bounds_chi
   - get_first_bound
   - get_next_bound
-
 - title: Data Generation and Simulation
   desc: Helpers for generating treatment regimes and simulating trials
   contents:
@@ -54,7 +57,6 @@ reference:
   - regime_list_no_trt_resp
   - sim_treatment
   - block_rand
-
 - title: Model Fitting
   desc: Q-learning and propensity score model fitting
   contents:
@@ -63,7 +65,6 @@ reference:
   - get_q_fits
   - get_q_coefs
   - pi_fits
-
 - title: Variance Estimation
   desc: Sandwich variance components
   contents:
@@ -72,22 +73,16 @@ reference:
   - value_terms
   - get_nu
   - get_kappa
-
 - title: Data
   desc: Example datasets
-  contents:
-  - pcsttrial
-
+  contents: pcsttrial
 articles:
 - title: Getting Started
-  contents:
-  - start-here
+  contents: start-here
 - title: Analysis
-  contents:
-  - iaipwe
+  contents: iaipwe
 - title: Simulation
-  contents:
-  - sim-smart
+  contents: sim-smart
 - title: Package Internals
-  contents:
-  - pkg_architecture
+  contents: pkg_architecture
+
