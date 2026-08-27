@@ -13,6 +13,7 @@ Useful links:
 \itemize{
   \item \url{https://MSDLLCpapers.github.io/rsmart/}
   \item \url{https://github.com/MSDLLCpapers/rsmart}
+  \item \url{https://msdllcpapers.github.io/rsmart/}
   \item Report bugs at \url{https://github.com/MSDLLCpapers/rsmart/issues}
 }
 
