@@ -18,6 +18,8 @@ Useful links:
 
 - <https://github.com/MSDLLCpapers/rsmart>
 
+- <https://msdllcpapers.github.io/rsmart/>
+
 - Report bugs at <https://github.com/MSDLLCpapers/rsmart/issues>
 
 ## Author
