@@ -1,5 +1,5 @@
 Package: rsmart
-Title: rsmart: An R Package for Sequential Multiple Assignment Randomized Trials
+Title: Sequential Multiple Assignment Randomized Trials design and analyses
 Version: 0.1.0
 Authors@R: c(
     person("Cole", "Manschot", email = "cole.manschot@msd.com", role = c("aut", "cre")),
@@ -15,7 +15,8 @@ Description: Implements the interim augmented inverse probability weighted
     inference at interim and final analyses. The package provides functions for
     value estimation, sandwich variance computation, group sequential stopping
     boundaries, and sample size determination for multi-stage SMARTs with up to
-    two treatment options at each stage.
+    two treatment options at each stage. See Manschot, Laber, and Davidian (2023)
+    <doi:10.1111/biom.13854> for additional details. 
 License: GPL (>= 3)
 URL: https://MSDLLCpapers.github.io/rsmart/, https://github.com/MSDLLCpapers/rsmart, https://msdllcpapers.github.io/rsmart/
 BugReports: https://github.com/MSDLLCpapers/rsmart/issues
