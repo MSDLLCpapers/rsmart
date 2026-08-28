@@ -4,9 +4,9 @@
 \name{rsmart-package}
 \alias{rsmart}
 \alias{rsmart-package}
-\title{rsmart: rsmart: An R Package for Sequential Multiple Assignment Randomized Trials}
+\title{rsmart: Sequential Multiple Assignment Randomized Trials design and analyses}
 \description{
-Implements the interim augmented inverse probability weighted estimator (IAIPWE) for estimating the value of treatment regimes embedded in sequential multiple assignment randomized trials (SMARTs). The IAIPWE subsumes both the inverse probability weighted estimator (IPWE) and the augmented inverse probability weighted estimator (AIPWE), enabling inference at interim and final analyses. The package provides functions for value estimation, sandwich variance computation, group sequential stopping boundaries, and sample size determination for multi-stage SMARTs with up to two treatment options at each stage.
+Implements the interim augmented inverse probability weighted estimator (IAIPWE) for estimating the value of treatment regimes embedded in sequential multiple assignment randomized trials (SMARTs). The IAIPWE subsumes both the inverse probability weighted estimator (IPWE) and the augmented inverse probability weighted estimator (AIPWE), enabling inference at interim and final analyses. The package provides functions for value estimation, sandwich variance computation, group sequential stopping boundaries, and sample size determination for multi-stage SMARTs with up to two treatment options at each stage. See Manschot, Laber, and Davidian (2023) \doi{10.1111/biom.13854} for additional details.
 }
 \seealso{
 Useful links:
