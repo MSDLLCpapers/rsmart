@@ -1,5 +1,5 @@
 Package: rsmart
-Title: Sequential Multiple Assignment Randomized Trials design and analyses
+Title: Sequential Multiple Assignment Randomized Trials Design and Analyses
 Version: 0.1.0
 Authors@R: c(
     person("Cole", "Manschot", email = "cole.manschot@msd.com", role = c("aut", "cre")),
