@@ -227,7 +227,7 @@ get_sample_size_chi <- function(
   rejH0 <- getrej(mualt)
   
   if (rejH0$rejH0 > 1 - beta){
-    print('At the initial sample size, the desired power is attained')
+    message("At the initial sample size, the desired power is attained.")
     return(list("N" = n,
             "power" = rejH0$rejH0,
             "prop_rej" = rejH0$prop_rej,

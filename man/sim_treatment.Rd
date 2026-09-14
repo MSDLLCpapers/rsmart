@@ -105,7 +105,7 @@ df <- data.frame(x1 = rnorm(100), a1 = rbinom(100, 1, 0.5))
 df <- sim_treatment(n_treatments = 2, dat = df, stage = 2)
 head(df)
 
-\dontrun{
+\donttest{
 # Stage 2 with different randomization probabilities depending on a1:
 # equal (50/50) if a1 == 0, unequal (70/30) if a1 == 1
 # Using a named list for prob, where names match group levels
