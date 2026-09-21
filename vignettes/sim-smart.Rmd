@@ -48,6 +48,7 @@ and again at stage 2 regardless of any intermediate outcome.
 This design has four embedded treatment regimes.
 
 ```{r design1-diagram, echo=FALSE, fig.cap="Design 1: Two-stage SMART without a response. All participants are re-randomized at stage 2.", fig.height=4, fig.width=8}
+oldpar <- par(no.readonly = TRUE)
 par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
 plot.new()
 plot.window(xlim = c(0, 11), ylim = c(-0.8, 6.5))
@@ -126,6 +127,7 @@ draw_box(x = 3.7, y = -0.6, label = "Stage 1",
 
 draw_box(x = 9.5, y = -0.6, label = "Stage 2", 
          h = 0.18, bg = col_phase, tcol = "white", cex = 0.7)
+par(oldpar)
 ```
 
 This design has four embedded regimes: 
@@ -195,6 +197,7 @@ In the case where responders are randomized and non-responders are not, then the
 non-responders and the function `sim_treatment` will assign responders, now encoded as `r2 = 0`, treatments. 
 
 ```{r design2-diagram, echo=FALSE, fig.cap="Design 2: Two-stage SMART where only non-responders are re-randomized at stage 2.", fig.height=5.5, fig.width=9}
+oldpar <- par(no.readonly = TRUE)
 par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
 plot.new()
 plot.window(xlim = c(0, 13), ylim = c(-1.5, 9))
@@ -293,6 +296,7 @@ draw_box(x = 5.7, y = -1.7, label = "Response",
          w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
 draw_box(x = 10.8, y = -1.7, label = "Stage 2",
          w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+par(oldpar)
 ```
 
 Responders follow a deterministic path (dashed lines). 
@@ -355,6 +359,7 @@ non-responders, and the randomization probabilities or allocation schedules
 can differ between the two groups.
 
 ```{r design3-diagram, echo=FALSE, fig.cap="Design 3: Two-stage SMART where both responders and non-responders are re-randomized at stage 2.", fig.height=6.5, fig.width=9}
+oldpar <- par(no.readonly = TRUE)
 par(mar = c(1.5, 0.2, 0.5, 0.2), family = "sans")
 plot.new()
 plot.window(xlim = c(0, 13), ylim = c(-2.5, 10.5))
@@ -469,6 +474,7 @@ draw_box(x = 5.7, y = -2.6, label = "Response",
          w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
 draw_box(x = 10.8, y = -2.6, label = "Stage 2",
          w = 0.9, h = 0.18, bg = col_phase, tcol = "white", cex = 0.65)
+par(oldpar)
 ```
 
 Because both responders and non-responders are randomized at stage 2,
