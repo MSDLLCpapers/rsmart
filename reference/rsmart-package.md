@@ -1,4 +1,4 @@
-# rsmart: Sequential Multiple Assignment Randomized Trials design and analyses
+# rsmart: Sequential Multiple Assignment Randomized Trials Design and Analyses
 
 Implements the interim augmented inverse probability weighted estimator
 (IAIPWE) for estimating the value of treatment regimes embedded in

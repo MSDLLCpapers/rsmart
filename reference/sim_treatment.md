@@ -144,7 +144,7 @@ head(df)
 #> 5  0.3295078  0  1
 #> 6 -0.8204684  1  1
 
-if (FALSE) { # \dontrun{
+# \donttest{
 # Stage 2 with different randomization probabilities depending on a1:
 # equal (50/50) if a1 == 0, unequal (70/30) if a1 == 1
 # Using a named list for prob, where names match group levels
@@ -154,5 +154,9 @@ df <- data.frame(a1 = rbinom(n, 1, 0.5))
 df <- sim_treatment(n_treatments = 2, dat = df, stage = 2,
                     prob = list("0" = c(0.5, 0.5), "1" = c(0.7, 0.3)))
 table(df$a1, df$a2)
-} # }
+#>    
+#>      0  1
+#>   0 37 61
+#>   1 71 31
+# }
 ```
