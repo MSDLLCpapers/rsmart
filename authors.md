@@ -13,7 +13,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/MSDLLCpapers/rsmart/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/MSDLLCpapers/rsmart/blob/v0.1.0/DESCRIPTION)
 
 Manschot C (2026). *rsmart: Sequential Multiple Assignment Randomized
 Trials Design and Analyses*. R package version 0.1.0,
