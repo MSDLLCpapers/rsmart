@@ -1,5 +1,11 @@
 # rsmart <img src="man/figures/rsmart_hex.png" alt="rsmart hex logo" align="right" width="120" />
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/MSDLLCpapers/rsmart/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MSDLLCpapers/rsmart/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/rsmart)](https://www.r-pkg.org/badges/version/rsmart)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/rsmart)](https://cranlogs.r-pkg.org/badges/rsmart)
+<!-- badges: end -->
+
 rsmart is an R package to plan and analyze sequential multiple assignment randomized trials (SMARTs)
 
 ## Installation
